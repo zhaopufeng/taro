@@ -134,7 +134,6 @@ export class RenderParser {
   private referencedIdentifiers: Set<t.Identifier>
   private renderScope: Scope
   private usedState: Set<string>
-  private customComponentData: Array<t.ObjectProperty>
   private componentProperies: Set<string>
   private loopRefs: Map<t.JSXElement, LoopRef>
 
@@ -1025,6 +1024,12 @@ export class RenderParser {
     JSXExpressionContainer: this.replaceIdWithTemplate(true)
   }
 
+  /**
+   *
+   * @param renderPath
+   * @param referencedIdentifiers
+   * 这三个属性是需要单独传入的
+   */
   constructor (
     renderPath: NodePath<t.ClassMethod>,
     methods: ClassMethodsMap,
@@ -1032,7 +1037,6 @@ export class RenderParser {
     referencedIdentifiers: Set<t.Identifier>,
     usedState: Set<string>,
     customComponentNames: Set<string>,
-    customComponentData: Array<t.ObjectProperty>,
     componentProperies: Set<string>,
     loopRefs: Map<t.JSXElement, LoopRef>
   ) {
@@ -1042,7 +1046,6 @@ export class RenderParser {
     this.referencedIdentifiers = referencedIdentifiers
     this.usedState = usedState
     this.customComponentNames = customComponentNames
-    this.customComponentData = customComponentData
     this.componentProperies = componentProperies
     this.loopRefs = loopRefs
     const renderBody = renderPath.get('body')
@@ -1521,9 +1524,6 @@ export class RenderParser {
       .filter(i => !i.startsWith('$$'))
       .filter(i => !this.loopRefIdentifiers.has(i))
     let properties = propertyKeys.map(i => t.objectProperty(t.identifier(i), t.identifier(i)))
-    if (this.customComponentData.length > 0) {
-      properties = properties.concat(this.customComponentData)
-    }
     const pendingState = t.objectExpression(
       properties.concat(
         Adapter.type === Adapters.swan && transformOptions.isRoot ? t.objectProperty(
