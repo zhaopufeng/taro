@@ -656,7 +656,7 @@ class Transformer {
 
   parseRender () {
     if (this.renderJSX.size) {
-      this.renderJSX.forEach((method) => {
+      this.renderJSX.forEach((method, methodName) => {
         this.result.template = this.result.template
         + new RenderParser(
           method,
@@ -666,8 +666,9 @@ class Transformer {
           this.usedState,
           this.customComponentNames,
           this.componentProperies,
-          this.loopRefs
-        ).outputTemplate
+          this.loopRefs,
+          methodName
+        ).outputTemplate + '\n'
       })
     }
   }
