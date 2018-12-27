@@ -293,6 +293,31 @@ class Transformer {
                     returnPath.get('argument').replaceWith(t.nullLiteral())
                   }
                 }
+              },
+              CallExpression (callPath) {
+                const callee = callPath.get('callee')
+                if (!callee.isMemberExpression()) {
+                  return
+                }
+                const args = callPath.node.arguments
+                const { object, property } = callee.node
+                if (t.isThisExpression(object) && t.isIdentifier(property) && property.name.startsWith('render')) {
+                  const name = property.name
+                  callPath.replaceWith(t.jSXElement(
+                    t.jSXOpeningElement(t.jSXIdentifier('Template'), [
+                      t.jSXAttribute(t.jSXIdentifier('is'), t.stringLiteral(name)),
+                      t.jSXAttribute(t.jSXIdentifier('data'), t.jSXExpressionContainer(
+                        t.callExpression(t.memberExpression(
+                          t.thisExpression(),
+                          t.identifier(`_create${name.slice(6)}Data`)
+                        ), args)
+                      ))
+                    ]),
+                    t.jSXClosingElement(t.jSXIdentifier('Template')),
+                    [],
+                    false
+                  ))
+                }
               }
             })
           }
