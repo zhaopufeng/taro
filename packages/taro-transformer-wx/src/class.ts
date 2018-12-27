@@ -281,8 +281,9 @@ class Transformer {
         if (t.isIdentifier(node.key)) {
           const name = node.key.name
           self.methods.set(name, path)
-          if (name === 'render') {
-            self.renderJSX.set('render', path)
+          if (name.startsWith('render')) {
+            self.renderJSX.set(name, path)
+            self.refIdMap.set(path, new Set([]))
             path.traverse({
               ReturnStatement (returnPath) {
                 const arg = returnPath.node.argument
@@ -320,10 +321,6 @@ class Transformer {
                 }
               }
             })
-          }
-          if (name.startsWith('render')) {
-            self.renderJSX.set(name, path)
-            self.refIdMap.set(path, new Set([]))
           }
           if (name === 'constructor') {
             path.traverse({
